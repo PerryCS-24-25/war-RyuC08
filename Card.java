@@ -54,7 +54,7 @@ public class Card {
 
         this.isFaceUp = false;
         this.isVisible = false;
-        this.xPosition = rank * 50;
+        this.xPosition = 0;
         this.yPosition = 0;
     }
 
@@ -66,15 +66,13 @@ public class Card {
      * Make the card visible on the canvas
      */
     public void makeVisible() {
-        if (!isVisible) {
-            isVisible = true;
-            if (isFaceUp) {
-                image.makeVisible();
-                backImage.makeInvisible();
-            } else {
-                backImage.makeVisible();
-                image.makeInvisible();
-            }
+        isVisible = true;
+        if (isFaceUp) {
+            image.makeVisible();
+            backImage.makeInvisible();
+        } else {
+            backImage.makeVisible();
+            image.makeInvisible();
         }
     }
 
@@ -82,11 +80,9 @@ public class Card {
      * Remove the card from the canvas
      */
     public void makeInvisible() {
-        if (isVisible) {
-            isVisible = false;
-            image.makeInvisible();
-            backImage.makeInvisible();            
-        }
+        isVisible = false;
+        image.makeInvisible();
+        backImage.makeInvisible();
     }
 
     /**
@@ -94,6 +90,10 @@ public class Card {
      */
     public void turnFaceUp() {
         this.isFaceUp = true;
+        if (isVisible) {
+            this.backImage.makeInvisible();
+            this.image.makeVisible();
+        }
     }
 
     /**
@@ -101,6 +101,10 @@ public class Card {
      */
     public void turnFaceDown() {
         this.isFaceUp = false;
+        if (isVisible) {
+            this.backImage.makeVisible();
+            this.image.makeInvisible();
+        }
     }
 
     /**
