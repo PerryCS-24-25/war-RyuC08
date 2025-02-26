@@ -32,6 +32,7 @@ public class Game
         p2Cards = new ArrayList<>();
         // Prepare the canvas
         canvas = Canvas.getCanvas();
+        canvas.setBackgroundColor = Color.decode("#35654D");
         canvas.clear();
         canvas.setTitle("MyGame");
         
