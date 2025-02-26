@@ -180,20 +180,16 @@ public class Image {
      * Make this image visible. If it is already visible, do nothing.
      */
     public void makeVisible() {
-        if (!isVisible) {
-            isVisible = true;
-            add();
-        }
+        isVisible = true;
+        add();
     }
 
     /**
      * Make this image invisible. If it is already invisible, do nothing.
      */
     public void makeInvisible() {
-        if (isVisible) {
-            isVisible = false;
-            remove();
-        }
+        isVisible = false;
+        remove();
     }
 
     /**
@@ -211,7 +207,7 @@ public class Image {
     {
         if(isVisible) {
             Canvas canvas = Canvas.getCanvas();
-            canvas.add(this,(g) -> {
+            canvas.add(this, (g) -> {
                     ((Graphics2D)g).setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
                     g.drawImage(image, xPosition, yPosition, xSize, ySize, null);
             });
