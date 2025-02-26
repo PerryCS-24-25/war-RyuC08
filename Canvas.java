@@ -44,7 +44,7 @@ public class Canvas {
      */
     public static Canvas getCanvas() {
         if (canvasSingleton == null) {
-            canvasSingleton = new Canvas("Picture Demo", 800, 600, Color.decode("#35654D"));
+            canvasSingleton = new Canvas("Picture Demo", 800, 600, Color.white);
         }
         canvasSingleton.setVisible(true);
         return canvasSingleton;
@@ -232,7 +232,8 @@ public class Canvas {
     public void add(Object referenceObject, DrawShape shapeFunction) {
         synchronized (shapes) {
             if (shapes.containsKey(referenceObject)) {
-                throw new IllegalArgumentException("Shape already added to canvas");
+                shapes.remove(referenceObject);
+                // throw new IllegalArgumentException("Shape already added to canvas");
             }
 
             shapes.put(referenceObject, shapeFunction);
