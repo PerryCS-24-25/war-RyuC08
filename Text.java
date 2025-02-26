@@ -125,6 +125,20 @@ public class Text
         this.xPosition = x;
         this.yPosition = y;
     }
+
+    /**
+     * @return the width of the text on the canvas
+     */
+    public int getWidth() {
+        return (int)Math.round(this.bounds.getWidth());
+    }
+
+    /**
+     * @return The height of the text on the canvas
+     */
+    public int getHeight() {
+        return (int)Math.round(this.bounds.getHeight());
+    }
     
     /**
      * Move the text a few pixels to the right.
