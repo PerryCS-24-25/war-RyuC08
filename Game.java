@@ -19,10 +19,10 @@ public class Game
     private List<Card> p2Cards;
     private List<Card> p1PlayedCards;
     private List<Card> p2PlayedCards;
-    private List<Card> p1Discard;
-    private List<Card> p2Discard;
+    private List<Card> discard;
     Rect button;
     Text dealT;
+    private boolean roundReady = false;
     /**
      * Create a window that will display and allow the user to play the game
      */
@@ -63,20 +63,6 @@ public class Game
         buildDisplay();
     }
     /**
-     * Deal all cards to the players
-     */
-    private void deal(){
-        while(cards.size() > 0){
-            int randomizer1 = (int)(cards.size()*Math.random());
-            p1Cards.add(cards.get(randomizer1));
-            cards.remove(randomizer1);
-            int randomizer2 = (int)(cards.size()*Math.random());
-            p2Cards.add(cards.get(randomizer2));
-            cards.remove(randomizer2);
-        }
-        
-    }
-    /**
      * Setup the display for the game
      */
     private void buildDisplay() {
@@ -115,9 +101,134 @@ public class Game
             dealT.makeInvisible();
             deal();
         }
+        if(roundReady){
+            play();
+        }
 
     }
+    /**
+     * Deal all cards to the players
+     */
+    private void deal(){
+        while(cards.size() > 0){
+            int randomizer1 = (int)(cards.size()*Math.random());
+            p1Cards.add(cards.get(randomizer1));
+            cards.remove(randomizer1);
+            int randomizer2 = (int)(cards.size()*Math.random());
+            p2Cards.add(cards.get(randomizer2));
+            cards.remove(randomizer2);
+        }
+        int x = 50;
+        for(Card card : p1Cards){
+            card.setPosition(x, 600 - card.getHeight() - 10);
+            //x++;
+        }
+        x = 50;
+        for(Card card : p2Cards){
+            card.setPosition(x, 10);
+            //x++;
+        }
+        canvas.redraw();
+        roundReady = true;
+    }
+    /**
+     * Play the game
+     */
+    private void play(){
+        p1PlayedCards.add(p1Cards.get(p1Cards.size()));
+        p1Cards.remove(p1Cards.get(p1Cards.size()));
+        p2PlayedCards.add(p1Cards.get(p1Cards.size()));
+        p2Cards.remove(p1Cards.get(p1Cards.size()));
+            
+        p1PlayedCards.get(0).setPosition(250, 10);
+        p2PlayedCards.get(0).setPosition(250, 600 - p2PlayedCards.get(0).getHeight() - 10);
+        p1PlayedCards.get(0).setFaceUp(true);
+        p2PlayedCards.get(0).setFaceUp(true);
 
+        canvas.redraw();
+        
+        discardPC();
+        giveWC();
+    }
+    /**
+     * In case of a tie
+     */
+    private void tie(){
+        boolean winner = false;
+        while(winner == false){
+            p1PlayedCards.add(p1Cards.get(p1Cards.size()));
+            p1Cards.remove(p1Cards.get(p1Cards.size()));
+            p1PlayedCards.add(p1Cards.get(p1Cards.size()));
+            p1Cards.remove(p1Cards.get(p1Cards.size()));
+            p2PlayedCards.add(p1Cards.get(p1Cards.size()));
+            p2Cards.remove(p1Cards.get(p1Cards.size()));
+            p2PlayedCards.add(p1Cards.get(p1Cards.size()));
+            p2Cards.remove(p1Cards.get(p1Cards.size()));
+            
+            p1PlayedCards.get(0).setPosition(250, 10);
+            p1PlayedCards.get(1).setPosition(350, 10);
+            p2PlayedCards.get(0).setPosition(250, 600 - p2PlayedCards.get(0).getHeight() - 10);
+            p2PlayedCards.get(1).setPosition(350, 600 - p2PlayedCards.get(0).getHeight() - 10);
+            
+            discardPC();
+            if(p1PlayedCards.get(0).getValue() > p2PlayedCards.get(0).getValue()){
+                for(int i = 0; i < discard.size(); i++){
+                    p1Cards.add(discard.get(i));
+                    discard.remove(discard.get(i));
+                    p1Cards.get(p1Cards.size() - 1).setPosition(250, 10);
+                    p1Cards.get(p1Cards.size() - 1).setFaceUp(false);
+                    canvas.redraw();
+                }
+            }
+            else if (p1PlayedCards.get(0).getValue() < p2PlayedCards.get(0).getValue()){
+                for(int i = 0; i < discard.size(); i++){
+                    p2Cards.add(discard.get(i));
+                    discard.remove(discard.get(i));
+                    p2Cards.get(p2Cards.size() - 1).setPosition(250, 600 - p2PlayedCards.get(0).getHeight() - 10);
+                    p2Cards.get(p2Cards.size() - 1).setFaceUp(false);
+                    canvas.redraw();
+                }
+            }
+    }
+    /**
+     * Give winners all played cards
+     */
+    private void giveWC(){
+        if(p1PlayedCards.get(0).getValue() > p2PlayedCards.get(0).getValue()){
+            for(int i = 0; i < discard.size(); i++){
+                p1Cards.add(discard.get(i));
+                discard.remove(discard.get(i));
+                p1Cards.get(p1Cards.size() - 1).setPosition(250, 10);
+                p1Cards.get(p1Cards.size() - 1).setFaceUp(false);
+                canvas.redraw();
+            }
+        }
+        else if (p1PlayedCards.get(0).getValue() < p2PlayedCards.get(0).getValue()){
+            for(int i = 0; i < discard.size(); i++){
+                p2Cards.add(discard.get(i));
+                discard.remove(discard.get(i));
+                p2Cards.get(p2Cards.size() - 1).setPosition(250, 600 - p2PlayedCards.get(0).getHeight() - 10);
+                p2Cards.get(p2Cards.size() - 1).setFaceUp(false);
+                canvas.redraw();
+            }
+        }
+        else{
+            tie();
+        }
+    }
+    /**
+     * Place unneeded cards in discard list
+     */
+    private void discardPC(){
+        for(int i = 0; i < p1PlayedCards.size(); i++){
+            discard.add(p1PlayedCards.get(0));
+            p1PlayedCards.remove(0);
+        }
+        for(int i = 0; i < p2PlayedCards.size(); i++){
+            discard.add(p2PlayedCards.get(0));
+            p2PlayedCards.remove(0);
+        }
+    }
     /**
      * Handle the user moving the mouse in the window
      * @param button the button that was pressed, or -1 if no button was pressed
