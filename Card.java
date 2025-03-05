@@ -113,6 +113,16 @@ public class Card {
      */
     public void setFaceUp(boolean faceUp) {
         this.isFaceUp = faceUp;
+
+        
+        if (isVisible) {
+            this.backImage.makeVisible();
+            this.image.makeInvisible();
+        }
+        else {
+            this.backImage.makeInvisible();
+            this.image.makeVisible();
+        }
     }
 
     /**
@@ -219,6 +229,10 @@ public class Card {
      */
     public boolean contains(int x, int y) {
         return image.contains(x, y);
+    }
+
+    public String toString() {
+        return "" + rank + " of " + suit + "@ " + xPosition + ", " + yPosition + "Face: " + isFaceUp();
     }
 
     /**

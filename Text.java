@@ -59,6 +59,12 @@ public class Text
     }
 
     /**
+     * Change what is inside of the text
+     */
+    public void setText(String words){
+        text = words;
+    }
+    /**
      * Make this text visible. If it was already visible, do nothing.
      */
     public void makeVisible()

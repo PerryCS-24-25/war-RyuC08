@@ -22,7 +22,19 @@ public class Game
     private List<Card> discard;
     Rect button;
     Text dealT;
+    Rect pButton;
+    Text playT;
+    Text cardsT;
+    Text p1Counter;
+    Text p2Counter;
+    Text p1RWinnerText;// = new Text("You Win The Round", 350, 250, 100, "white", false);
+    Text p2RWinnerText;// = new Text("You Lose The Round", 350, 250, 100, "white", false);
+    Text tieRText;// = new Text("War!", 350, 250, 100, "orange", false);
+    Text winnerText;
     private boolean roundReady = false;
+    private boolean tieRound= false;
+    private boolean roundEnd = false;
+    private boolean prepRound = false;
     /**
      * Create a window that will display and allow the user to play the game
      */
@@ -30,11 +42,19 @@ public class Game
         cards = Card.loadCards();
         p1Cards = new ArrayList<>();
         p2Cards = new ArrayList<>();
+        p1PlayedCards = new ArrayList<>();
+        p2PlayedCards = new ArrayList<>();
+        discard = new ArrayList<>();
         // Prepare the canvas
         canvas = Canvas.getCanvas();
         canvas.setBackgroundColor("#35654D");
         canvas.clear();
         canvas.setTitle("MyGame");
+
+        p1RWinnerText = new Text("You Won The Round", 150, 250, 50, "white", false);
+        p2RWinnerText = new Text("You Lost The Round", 150, 250, 50, "white", false);
+        tieRText = new Text("War!", 350, 250, 100, "orange", false);
+    
         
         buildDisplay();
         canvas.redraw();     
@@ -85,6 +105,25 @@ public class Game
         button = new Rect(550, 275, 150, 75, "red", true);
         dealT = new Text("Deal", 573, 330, 50, "white", true);
     }
+    /*
+     * Create play cards button
+     */
+    private void playB(){
+        pButton = new Rect(640, 440, 150, 150, "green", true);
+        playT = new Text("Play", 673, 500, 45, "white", true);
+        cardsT = new Text("Cards", 657, 550, 45, "white", true);
+    }
+    /*
+     * Create card counters
+     */
+    private void counter(){
+        p1Counter = new Text("" + p1Cards.size(), 5, (600 - p1Cards.get(0).getHeight() - 10) + 18 + (p2Cards.get(0).getHeight()/2), 35, "white", true);
+        p2Counter = new Text("" + p2Cards.size(), 5, 28 + (p2Cards.get(0).getHeight()/2), 35, "white", true);
+    }
+    private void updateCounter(){
+        p1Counter.setText("" + p1Cards.size());
+        p2Counter.setText("" + p2Cards.size());
+    }
     /**
      * Handle the user clicking in the window
      * @param button the button that was pressed
@@ -100,10 +139,34 @@ public class Game
             button.makeInvisible();
             dealT.makeInvisible();
             deal();
+            playB();
+            counter();
         }
-        if(roundReady){
-            play();
+        else if(tieRound){
+            tie();
+            }
+        else if(roundEnd){
+            giveWC(); 
         }
+        else if(roundReady){
+            if((pButton.isVisible()) &&
+            (x >= pButton.getX()) && (x <= (pButton.getX() + pButton.getWidth())) &&
+            (y >= pButton.getY()) && (y <= (pButton.getY() + pButton.getHeight()))){
+                 play();
+            }
+        }
+        else if(prepRound){
+            pButton.makeVisible();
+            playT.makeVisible();
+            cardsT.makeVisible();
+            p1RWinnerText.makeInvisible();
+            p2RWinnerText.makeInvisible();
+            tieRText.makeInvisible();
+            prepRound = false;
+            roundReady = true;
+        }
+       
+        
 
     }
     /**
@@ -118,59 +181,56 @@ public class Game
             p2Cards.add(cards.get(randomizer2));
             cards.remove(randomizer2);
         }
-        int x = 50;
-        for(Card card : p1Cards){
-            card.setPosition(x, 600 - card.getHeight() - 10);
-            //x++;
-        }
-        x = 50;
-        for(Card card : p2Cards){
-            card.setPosition(x, 10);
-            //x++;
-        }
-        canvas.redraw();
+        giveCard();
+        
         roundReady = true;
     }
     /**
      * Play the game
      */
     private void play(){
-        p1PlayedCards.add(p1Cards.get(p1Cards.size()));
-        p1Cards.remove(p1Cards.get(p1Cards.size()));
-        p2PlayedCards.add(p1Cards.get(p1Cards.size()));
-        p2Cards.remove(p1Cards.get(p1Cards.size()));
-            
-        p1PlayedCards.get(0).setPosition(250, 10);
-        p2PlayedCards.get(0).setPosition(250, 600 - p2PlayedCards.get(0).getHeight() - 10);
-        p1PlayedCards.get(0).setFaceUp(true);
-        p2PlayedCards.get(0).setFaceUp(true);
+        pButton.makeInvisible();
+        playT.makeInvisible();
+        cardsT.makeInvisible();
 
+        p1PlayedCards.add(p1Cards.get(p1Cards.size() - 1));
+        p1Cards.remove(p1Cards.get(p1Cards.size() - 1));
+        p2PlayedCards.add(p2Cards.get(p2Cards.size() - 1));
+        p2Cards.remove(p2Cards.get(p2Cards.size() - 1));
+          
+        p1PlayedCards.get(0).setPosition(250, 600 - p1PlayedCards.get(0).getHeight() - 10);
+        p2PlayedCards.get(0).setPosition(250, 10);
+        p1PlayedCards.get(0).turnFaceUp();
+        p2PlayedCards.get(0).turnFaceUp();
+
+        updateCounter();
         canvas.redraw();
         
-        discardPC();
-        giveWC();
+        roundReady = false;
+        roundEnd = true;
     }
     /**
      * In case of a tie
      */
     private void tie(){
-        boolean winner = false;
-        while(winner == false){
-            p1PlayedCards.add(p1Cards.get(p1Cards.size()));
-            p1Cards.remove(p1Cards.get(p1Cards.size()));
-            p1PlayedCards.add(p1Cards.get(p1Cards.size()));
-            p1Cards.remove(p1Cards.get(p1Cards.size()));
-            p2PlayedCards.add(p1Cards.get(p1Cards.size()));
-            p2Cards.remove(p1Cards.get(p1Cards.size()));
-            p2PlayedCards.add(p1Cards.get(p1Cards.size()));
-            p2Cards.remove(p1Cards.get(p1Cards.size()));
+            p1PlayedCards.add(p1Cards.get(p1Cards.size() - 1));
+            p1Cards.remove(p1Cards.get(p1Cards.size() - 1));
+            p1PlayedCards.add(p1Cards.get(p1Cards.size() - 1));
+            p1Cards.remove(p1Cards.get(p1Cards.size() - 1));
+            p2PlayedCards.add(p1Cards.get(p1Cards.size() - 1));
+            p2Cards.remove(p1Cards.get(p1Cards.size() - 1));
+            p2PlayedCards.add(p1Cards.get(p1Cards.size() - 1));
+            p2Cards.remove(p1Cards.get(p1Cards.size() - 1));
             
-            p1PlayedCards.get(0).setPosition(250, 10);
-            p1PlayedCards.get(1).setPosition(350, 10);
-            p2PlayedCards.get(0).setPosition(250, 600 - p2PlayedCards.get(0).getHeight() - 10);
-            p2PlayedCards.get(1).setPosition(350, 600 - p2PlayedCards.get(0).getHeight() - 10);
+            p1PlayedCards.get(0).setPosition(250, 600 - p2PlayedCards.get(0).getHeight() - 10);
+            p1PlayedCards.get(1).setPosition(350, 600 - p2PlayedCards.get(0).getHeight() - 10);
+            p2PlayedCards.get(0).setPosition(250, 10);
+            p2PlayedCards.get(1).setPosition(350, 10);
             
             discardPC();
+
+            canvas.redraw();
+
             if(p1PlayedCards.get(0).getValue() > p2PlayedCards.get(0).getValue()){
                 for(int i = 0; i < discard.size(); i++){
                     p1Cards.add(discard.get(i));
@@ -178,6 +238,7 @@ public class Game
                     p1Cards.get(p1Cards.size() - 1).setPosition(250, 10);
                     p1Cards.get(p1Cards.size() - 1).setFaceUp(false);
                     canvas.redraw();
+                    tieRound = false;
                 }
             }
             else if (p1PlayedCards.get(0).getValue() < p2PlayedCards.get(0).getValue()){
@@ -187,34 +248,58 @@ public class Game
                     p2Cards.get(p2Cards.size() - 1).setPosition(250, 600 - p2PlayedCards.get(0).getHeight() - 10);
                     p2Cards.get(p2Cards.size() - 1).setFaceUp(false);
                     canvas.redraw();
+                    tieRound = false;
                 }
             }
+            updateCounter();
     }
     /**
      * Give winners all played cards
      */
     private void giveWC(){
+        
+        System.out.println("p1 " + p1PlayedCards.toString());
+        System.out.println("p2 " + p2PlayedCards.toString());
+        roundEnd = false;
         if(p1PlayedCards.get(0).getValue() > p2PlayedCards.get(0).getValue()){
+            discardPC();
+            p1RWinnerText.makeVisible();
             for(int i = 0; i < discard.size(); i++){
-                p1Cards.add(discard.get(i));
-                discard.remove(discard.get(i));
-                p1Cards.get(p1Cards.size() - 1).setPosition(250, 10);
-                p1Cards.get(p1Cards.size() - 1).setFaceUp(false);
-                canvas.redraw();
+                Card c = discard.get(i);
+                p1Cards.add(0, c);
+                c.setPosition(50, 600 - c.getHeight() - 10);
+                c.turnFaceDown();
+                
+                
+                System.out.println("p1 added: " + c);
+                prepRound = true;
+                
             }
         }
         else if (p1PlayedCards.get(0).getValue() < p2PlayedCards.get(0).getValue()){
+            discardPC();
+            p2RWinnerText.makeVisible();
             for(int i = 0; i < discard.size(); i++){
-                p2Cards.add(discard.get(i));
-                discard.remove(discard.get(i));
-                p2Cards.get(p2Cards.size() - 1).setPosition(250, 600 - p2PlayedCards.get(0).getHeight() - 10);
-                p2Cards.get(p2Cards.size() - 1).setFaceUp(false);
-                canvas.redraw();
+                Card c = discard.get(i);
+                p2Cards.add(0, c);
+                c.setPosition(50, 10);
+                c.turnFaceDown();
+                
+                System.out.println("p2 added: " + c);
+                prepRound = true;
             }
         }
         else{
-            tie();
+            discardPC();
+            tieRText.makeVisible();
+            tieRound = true;
         }
+        for(int i = 0; i < discard.size(); ){
+            discard.remove(0);
+        }
+        updateCounter();
+        canvas.redraw();
+        
     }
     /**
      * Place unneeded cards in discard list
@@ -227,6 +312,29 @@ public class Game
         for(int i = 0; i < p2PlayedCards.size(); i++){
             discard.add(p2PlayedCards.get(0));
             p2PlayedCards.remove(0);
+        }
+    }
+    /**
+     * Put all cards back to players' decks
+     */
+    private void giveCard(){
+        for(Card card : p1Cards){
+            card.setPosition(50, 600 - card.getHeight() - 10);
+        }
+        for(Card card : p2Cards){
+            card.setPosition(50, 10);
+        }
+        canvas.redraw();
+    }
+    /*
+     * End game when someone wins
+     */
+    private void winCondition(){
+        if(p1Cards.size() == 52){
+            //winnerText = new Text("You win!", 250, );
+        }
+        if(p2Cards.size() == 52){
+            
         }
     }
     /**
